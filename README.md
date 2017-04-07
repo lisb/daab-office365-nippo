@@ -1,157 +1,95 @@
-# Hubot
+# 日報ボット for Office 365
 
-This is a version of GitHub's Campfire bot, hubot. He's pretty cool.
+## はじめに
 
-This version is designed to be deployed on [Heroku][heroku]. This README was generated for you by hubot to help get you started. Definitely update and improve to talk about your own instance, how to use and deploy, what functionality he has, etc!
+このドキュメントは、direct と Office 365 を連携させた日報ボット(以下、ボット)について、各種設定から実行するまでの手順書となっています。そのため、direct および Office 365 の両サービスをご契約・ご利用中のものとしています。
 
-[heroku]: http://www.heroku.com
+まだ、ご利用でない方は、[direct](https://direct4b.com/ja/) および [Office 365](http://www.microsoft.com/ja-jp/office/365/) のそれぞれに無料トライアルがありますので、そちらをご参照ください。
 
-### Testing Hubot Locally
+## ボット用アカウントの取得
 
-You can test your hubot by running the following.
+ボット用に、新しくメールアドレスを用意します。
 
-    % bin/hubot
+### direct 
 
-You'll see some start up output about where your scripts come from and a
-prompt.
+通常のユーザと同じように、ボット用アカウントを作成します。
 
-    [Sun, 04 Dec 2011 18:41:11 GMT] INFO Loading adapter shell
-    [Sun, 04 Dec 2011 18:41:11 GMT] INFO Loading scripts from /home/tomb/Development/hubot/scripts
-    [Sun, 04 Dec 2011 18:41:11 GMT] INFO Loading scripts from /home/tomb/Development/hubot/src/scripts
-    Hubot>
+組織の管理ツールから、ボット用メールアドレスに招待メールを送信します。
+管理ツールのご利用方法については、[こちらの管理ツールマニュアル](https://direct4b.com/ja/manual_dl.html)をご参照ください。管理ツールのご利用には権限が必要です。お持ちでない方は、契約者もしくは管理者にご連絡下さい。
 
-Then you can interact with hubot by typing `hubot help`.
+組織に招待されると、ボット用メールアドレスにメールが届きます。
+メールに記載されているURLをクリックしてアカウント登録手続きをしてください。ご利用開始までの手順については、[こちらの導入マニュアル](https://direct4b.com/ja/manual_dl.html)をご参照ください。
 
-    Hubot> hubot help
+[ログインページ](https://direct4b.com/signin)からボット用メールアドレスでログインします。
+招待を承認する画面が開きますので、その画面で「承認」を選択してください。
+次に、設定＞プロフィール編集より、表示名とプロフィール画像をボット用に変更します。
 
-    Hubot> animate me <query> - The same thing as `image me`, except adds a few
-    convert me <expression> to <units> - Convert expression to given units.
-    help - Displays all of the help commands that Hubot knows about.
-    ...
+### Office 365
 
+連携アプリケーションの開発のためには Office365 に Developer Site の追加が必要です。追加の方法は現在の契約状態によって異なりますので、[こちらのドキュメント](http://msdn.microsoft.com/en-us/office/office365/howto/setup-development-environment#bk_Office365Account)を参考に適切な方法を選択して追加してください。
 
-### Scripting
+連携アプリケーションの認証のためには Microsoft Azure Active Directory でのアプリケーション登録が必要です。[Microsoft Azure Management](https://manage.windowsazure.com/) を開き、Active Directory のアプリケーションタブを開き、下段のメニューからアプリケーションを追加します。Microsoft Azure Management でアプリケーションの追加方法については、[こちらのヘルプページ](http://msdn.microsoft.com/library/azure/dn151122.aspx)をご参照ください。
 
-Take a look at the scripts in the `./scripts` folder for examples.
-Delete any scripts you think are useless or boring.  Add whatever functionality you
-want hubot to have. Read up on what you can do with hubot in the [Scripting Guide](https://github.com/github/hubot/blob/master/docs/scripting.md).
+アプリケーション情報の指定では、「ネイティブ クライアント アプリケーション」を選択し、リダイレクト URI には ``http://localhost/`` を指定します。追加した後は構成の「他のアプリケーションに対するアクセス許可」で、「Office 365 SharePoint Online」を選択し、「デリゲートされたアクセス許可」のチェックをすべてオンにします。アプリケーションの構成方法については、[こちらのヘルプページ](http://msdn.microsoft.com/en-us/library/dn132599.aspx#BKMK_Native)をご参照ください。
 
-### Redis Persistence
+## node のインストール
 
-If you are going to use the `redis-brain.coffee` script from `hubot-scripts`
-(strongly suggested), you will need to add the Redis to Go addon on Heroku which requires a verified
-account or you can create an account at [Redis to Go][redistogo] and manually
-set the `REDISTOGO_URL` variable.
+[http://nodejs.org/](http://nodejs.org/) から最新版をインストールします。v0.10.32 で動作確認しています。
 
-    % heroku config:set REDISTOGO_URL="..."
+## サンプルプログラムの設定
 
-If you don't require any persistence feel free to remove the
-`redis-brain.coffee` from `hubot-scripts.json` and you don't need to worry
-about redis at all.
+サンプルプログラムを[ダウンロード](office365-nippo-download.html)して展開します。以降は、この展開したディレクトリ(フォルダ)にて、コマンドライン(コマンドプロンプト)で作業することになります。
 
-[redistogo]: https://redistogo.com/
+### direct
 
-## Adapters
+direct へのアクセスには、アクセストークンが利用されます。アクセストークンの取得には、アクセストークンを環境変数に設定していない状態で、以下のコマンドを実行し、ボット用のメールアドレスとパスワードを入力します。
 
-Adapters are the interface to the service you want your hubot to run on. This
-can be something like Campfire or IRC. There are a number of third party
-adapters that the community have contributed. Check
-[Hubot Adapters][hubot-adapters] for the available ones.
+	$ bin/hubot
+	Email: loginid@bot.email.com
+	Password: *****
+	0123456789ABCDEF_your_direct_access_token
 
-If you would like to run a non-Campfire or shell adapter you will need to add
-the adapter package as a dependency to the `package.json` file in the
-`dependencies` section.
+以下の環境変数に、アクセストークンを設定します。
+	
+	$ export HUBOT_DIRECT_TOKEN=0123456789ABCDEF_your_direct_access_token
+	
 
-Once you've added the dependency and run `npm install` to install it you can
-then run hubot with the adapter.
+### Office 365
 
-    % bin/hubot -a <adapter>
+Office 365 へのアクセスには、[OAuth2](http://msdn.microsoft.com/en-us/office/office365/howto/common-app-authentication-tasks)が利用されます。
 
-Where `<adapter>` is the name of your adapter without the `hubot-` prefix.
+以下の環境変数に、取得したアプリケーションIDおよびシークレットを設定します。
 
-[hubot-adapters]: https://github.com/github/hubot/blob/master/docs/adapters.md
+	export O365_CLIENT_ID=
 
-## hubot-scripts
+ボットに初めて話しかけたとき、コンソールにURLが表示されて処理が停止します。
 
-There will inevitably be functionality that everyone will want. Instead
-of adding it to hubot itself, you can submit pull requests to
-[hubot-scripts][hubot-scripts].
+	$ bin/hubot
+	...
+	https://login.windows.net/common/oauth2/authorize?....
+	redirect url? 
+	
+この URL をブラウザで開き、Office 365 の日報ボット用アカウントでログインします。ログインが成功すると認可画面が表示されますので承認してください。その後、http://localhost/?code=... というURLにリダイレクトされます。「ページの読み込みエラー」といった画面になるかもしれませんが、コマンドラインに戻ってそのURLを入力します。
 
-To enable scripts from the hubot-scripts package, add the script name with
-extension as a double quoted string to the `hubot-scripts.json` file in this
-repo.
+	redirect url? http://localhost/?code=AAABAAAA...
 
-[hubot-scripts]: https://github.com/github/hubot-scripts
+トークンの情報は起動したディレクトリの ``.storage`` ファイルに保存されます。次回起動時はこの内容が読み込まれます。
 
-## external-scripts
+### 日報フォルダとテンプレートファイル
 
-Tired of waiting for your script to be merged into `hubot-scripts`? Want to
-maintain the repository and package yourself? Then this added functionality
-maybe for you!
+日報はテンプレートファイルから生成され、日報フォルダにアップロードされます。
 
-Hubot is now able to load scripts from third-party `npm` packages! To enable
-this functionality you can follow the following steps.
+Office 365 の OneDrive for Business に``日報``という名前のフォルダを作成し、日報ボットの利用者が読み書きできるようにアクセス権限を設定します。
 
-1. Add the packages as dependencies into your `package.json`
-2. `npm install` to make sure those packages are installed
+この日報フォルダに``日報テンプレ.docx``というファイルを置きます。テンプレートファイルのサンプルは、ダウンロードしたファイルに含まれています。
 
-To enable third-party scripts that you've added you will need to add the package
-name as a double quoted string to the `external-scripts.json` file in this repo.
+テンプレートファイル名とフォルダ名は、以下の環境変数で変更することができます。未設定の場合は以下の値になります。
 
-## Deployment
+	export NIPPO_FOLDER_NAME=日報
+	export NIPPO_TEMPLATE_NAME=日報テンプレ.docx
 
-    % heroku create --stack cedar
-    % git push heroku master
-    % heroku ps:scale app=1
+## サンプルプログラムの実行
 
-If your Heroku account has been verified you can run the following to enable
-and add the Redis to Go addon to your app.
+以下のコマンドを実行します。
 
-    % heroku addons:add redistogo:nano
-
-If you run into any problems, checkout Heroku's [docs][heroku-node-docs].
-
-You'll need to edit the `Procfile` to set the name of your hubot.
-
-More detailed documentation can be found on the
-[deploying hubot onto Heroku][deploy-heroku] wiki page.
-
-### Deploying to UNIX or Windows
-
-If you would like to deploy to either a UNIX operating system or Windows.
-Please check out the [deploying hubot onto UNIX][deploy-unix] and
-[deploying hubot onto Windows][deploy-windows] wiki pages.
-
-[heroku-node-docs]: http://devcenter.heroku.com/articles/node-js
-[deploy-heroku]: https://github.com/github/hubot/blob/master/docs/deploying/heroku.md
-[deploy-unix]: https://github.com/github/hubot/blob/master/docs/deploying/unix.md
-[deploy-windows]: https://github.com/github/hubot/blob/master/docs/deploying/unix.md
-
-## Campfire Variables
-
-If you are using the Campfire adapter you will need to set some environment
-variables. Refer to the documentation for other adapters and the configuraiton
-of those, links to the adapters can be found on [Hubot Adapters][hubot-adapters].
-
-Create a separate Campfire user for your bot and get their token from the web
-UI.
-
-    % heroku config:set HUBOT_CAMPFIRE_TOKEN="..."
-
-Get the numeric IDs of the rooms you want the bot to join, comma delimited. If
-you want the bot to connect to `https://mysubdomain.campfirenow.com/room/42` 
-and `https://mysubdomain.campfirenow.com/room/1024` then you'd add it like this:
-
-    % heroku config:set HUBOT_CAMPFIRE_ROOMS="42,1024"
-
-Add the subdomain hubot should connect to. If you web URL looks like
-`http://mysubdomain.campfirenow.com` then you'd add it like this:
-
-    % heroku config:set HUBOT_CAMPFIRE_ACCOUNT="mysubdomain"
-
-[hubot-adapters]: https://github.com/github/hubot/blob/master/docs/adapters.md
-
-## Restart the bot
-
-You may want to get comfortable with `heroku logs` and `heroku restart`
-if you're having issues.
+	$ bin/hubot
