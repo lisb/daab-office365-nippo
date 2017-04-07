@@ -34,7 +34,7 @@
 
 ## node のインストール
 
-[http://nodejs.org/](http://nodejs.org/) から最新版をインストールします。v0.10.32 で動作確認しています。
+[http://nodejs.org/](http://nodejs.org/) から最新版をインストールします。v6.2.1 で動作確認しています。
 
 ## サンプルプログラムの設定
 
